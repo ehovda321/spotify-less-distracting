@@ -142,7 +142,6 @@ export const SERVERS = [
   'https://inv.makerlab.tech',
   'https://invidious.slipfox.xyz',
   // 'https://inv.pistasjis.net',
-  'https://par1.iv.ggtyler.dev',
   'https://iv.melmac.space',
   // 'https://invidious.lunar.icu',
   // 'https://yt.oelrichsgarcia.de',

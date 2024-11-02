@@ -17,7 +17,8 @@ export async function loader({ request }: LoaderArgs) {
   } catch (error) {
     console.error('Error fetching trending videos:', error);
     return json({})
-  }
+    }
+    return null;
 };
 
 
