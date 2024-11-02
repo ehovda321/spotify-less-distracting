@@ -92,14 +92,6 @@ export default function App() {
     }
     });
 
-    setPlayerState((p) => ({
-      ...p,
-      buffering: false,
-      duration: undefined,
-      // progressValues: [0],
-      error: false
-    }))
-
     setFetcherDataShouldUpdateState('skip_update')
 
   useEffect(() => {
