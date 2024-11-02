@@ -3,7 +3,6 @@ import { useActionData, useLoaderData, useOutletContext, useSubmit } from "@remi
 import { SERVERS, randomFetch } from "~/utils";
 
 import { useEffect, useState } from "react";
-import VideoThumbnail from "~/components/videoThumbnail";
 import ThumbnailGrid from "~/components/ThumbnailGrid";
 
 export async function loader({ request }: LoaderArgs) {
@@ -14,12 +13,7 @@ export async function loader({ request }: LoaderArgs) {
   try {
 
     const trendingResponse = await randomFetch('api/v1/trending?type=music');
-    const trendingVideos = await trendingResponse.json();
-    // TODO: Cache url
-    // return trendingVideos;
-    return json({ trendingVideos },
-      // { headers: response.headers }
-    );
+
   } catch (error) {
     console.error('Error fetching trending videos:', error);
     return json({})
@@ -28,7 +22,6 @@ export async function loader({ request }: LoaderArgs) {
 
 
 export default function IndexPage() {
-  const { trendingVideos } = useLoaderData();
   const { onThumbnailClick } = useOutletContext<any>()
 
   // const actionData = useActionData();
@@ -71,7 +64,6 @@ export default function IndexPage() {
       <p className="text-white font-bold text-3xl tracking-tight">Good morning</p>
       <p className="text-white font-bold text-2xl tracking-tight py-6">Trending</p>
       <ThumbnailGrid
-        videos={trendingVideos}
         onThumbnailClick={onThumbnailClick}
       />
       <div className="py-16">

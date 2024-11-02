@@ -5,7 +5,6 @@ import { z } from "zod";
 import { json } from "react-router";
 import { randomFetch } from "~/utils";
 import { useEffect, useState } from "react";
-import VideoThumbnail from "~/components/videoThumbnail";
 
 
 export const meta: MetaFunction = () => {

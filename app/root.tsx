@@ -44,7 +44,7 @@ import { OverlayScrollbarsComponent } from "overlayscrollbars-react";
 
 import ItemPlaylist from "./components/ItemPlaylist";
 import { t } from "./utils";
-import { Video, playerStateAtom, playingVideoDataAtom, playlistsAtom } from "./atoms";
+import { playerStateAtom, playlistsAtom } from "./atoms";
 
 export const meta: MetaFunction = () => {
   return { title: "Muer" };
@@ -77,7 +77,6 @@ export default function App() {
   const [supabase] = useState(() =>
     createBrowserClient(env.SUPABASE_URL, env.SUPABASE_ANON_KEY)
   )
-  const [playingVideoData, setPlayingVideoData] = useAtom(playingVideoDataAtom);
   const [playlists, setPlaylists] = useAtom(playlistsAtom)
   
   const fetcher = useFetcher();
@@ -85,41 +84,12 @@ export default function App() {
   const [fetcherDataShouldUpdateState, setFetcherDataShouldUpdateState] = useState<'skip_update' | 'update_all' | 'update_keep_queue'>('skip_update');
 
   useEffect(() => {
-    console.log('debug playingVideoData', playingVideoData)
-  },[playingVideoData])
-
-  useEffect(() => {
     console.log('debug fetcher.data', fetcher.data)
-    const { video } = fetcher.data || {};
-
-    if (!video) {
-      console.log('Fetched empty data')
-      return
-    }
 
     if (fetcherDataShouldUpdateState == 'skip_update') {
       console.log('Should not update state, fetcher.data could have called effect because user navigated')
       return 
     }
-
-    if (video.videoId != playingVideoData?.videoId) {
-      return
-    }
-
-    setPlayingVideoData((v: any) => {
-      if (!v) return video
-      if (fetcherDataShouldUpdateState == 'update_keep_queue') {
-        return {
-          ...video,
-          videoThumbnails: v.videoThumbnails,  
-          recommendedVideos: v.recommendedVideos
-        }
-      } else {
-        return {
-          ...video,
-          videoThumbnails: v.videoThumbnails
-        }
-      }
     });
 
     setPlayerState((p) => ({
@@ -138,44 +108,12 @@ export default function App() {
   }, [playlists])
 
 
-  const onHeartClick = async ({ playingVideoData }: any) => {
-    console.log('debug heart clicked', playingVideoData);
+const onHeartClick = async () => {
     const heartedPlaylist = playlists.find(x => x.type ==  'hearted');
     if (!heartedPlaylist) return;
-    const hearted = heartedPlaylist.videos.some((video) => video.id == playingVideoData.videoId);
-
-    const thumbnailUrl = playingVideoData?.videoThumbnails?.at(0)?.url;
-
-    const newVideo = {
-      id: playingVideoData.videoId,
-      author: playingVideoData?.musicTracks?.at(0).artist || playingVideoData?.author || 'Unamed Author',
-      title: playingVideoData?.musicTracks?.at(0).song || playingVideoData?.title || 'Unamed Song',
-      thumbnailUrl: thumbnailUrl
-    };
-    heartedPlaylist.videos = hearted ? heartedPlaylist.videos.filter((video) => video.id != playingVideoData.videoId) :  [...heartedPlaylist.videos, newVideo];
-    setPlaylists([...playlists])
   }
 
-  const onThumbnailClick = async ({ videoId, thumbnailUrl, title, author }: any, keepQueue = false) => {
-    console.log('clicked', videoId);
-    if (videoId == playingVideoData?.videoId) {
-      setPlayerState((p) => ({
-        ...p,
-        playing: true
-      }))
-      return;
-    }
-
-    setPlayingVideoData((p) => ({
-      recommendedVideos: p?.recommendedVideos ?? [],
-      videoThumbnails: [{
-        url: thumbnailUrl
-      }],
-      title,
-      author,
-      videoId
-    }))
-
+  const onThumbnailClick = async ({ thumbnailUrl, title, author }: any, keepQueue = false) => {
     setPlayerState((p) => ({
       ...p,
       playing: true,
@@ -194,8 +132,6 @@ export default function App() {
     //   { method: "post",  }
     // );
     // if (fetcher.state === "idle" && fetcher.data == null) {
-    fetcher.load(`/videoData/${videoId}`);
-    setFetcherDataShouldUpdateState(keepQueue ? 'update_keep_queue' : 'update_all')
     // }
 
   }
@@ -332,7 +268,7 @@ export default function App() {
                 w-full
                 rounded-lg
               ">
-              <Outlet context={{ supabase, env, onThumbnailClick, playingVideoData }} />
+              <Outlet context={{ supabase, env, onThumbnailClick }} />
 
 
 
@@ -343,40 +279,21 @@ export default function App() {
 
           <div className="flex-none bg-black h-20 grid space-x-4  grid-cols-3 sm:grid-cols-9 sm:px-4 overflow-hidden">
             <div className="col-span-3 flex space-x-4 items-center px-4 sm:px-0">
-              <CImage
-                className="w-24 aspect-video object-cover rounded-lg flex-none select-none"
-                src={playingVideoData?.videoThumbnails?.at(0)?.url}
-                widthLargerThan={960}
-                heightLargerThan={640}
-              />
               <div className="flex-grow sm:flex-grow-0">
                 <p className="text-sm text-white font-semibold line-clamp-1 select-none">{
-                  playingVideoData?.musicTracks?.at(0).song ||
-                  playingVideoData?.title ||
                   'No Title Playing'
                 }</p>
                 <p className="text-xs text-neutral-400 line-clamp-1 select-none">{
-                  playingVideoData?.musicTracks?.at(0).artist ||
-                  playingVideoData?.author ||
                   'Author'
                 }</p>
               </div>
 
-              {
-                playingVideoData &&
-                <div className="flex-none">
-                  <HeartButton playingVideoData={playingVideoData} onHeartClick={onHeartClick} hearted={
-                    playlists.find(x => x.type == 'hearted')?.videos.some((video) => video.id == playingVideoData.videoId)
-                  }/>
-                </div>
-              }
 
               
               <button
-                      className={'sm:hidden' + t(playingVideoData != undefined, 'hover:scale-105', 'opacity-70')}
-                      onClick={() => {
-                        if (playingVideoData == undefined) return;
-                        setPlayerState((p) => ({ ...p, playing: !p.playing }));
+                      className={'sm:hidden' + t('hover:scale-105')}
+                              onClick={() => {
+                                  return;
                       }}>
                       {
                         playerState.playing ?
@@ -394,10 +311,9 @@ export default function App() {
                     <BackwardIcon className="w-6 h-6 text-neutral-400" />
 
                     <button
-                      className={` ${playingVideoData ? 'hover:scale-105' : 'opacity-70'}`}
+                      className={` ${'opacity-70'}`}
                       onClick={() => {
-                        if (playingVideoData == undefined) return;
-                        setPlayerState((p) => ({ ...p, playing: !p.playing }));
+                          return;
                       }}>
                       {
                         playerState.playing ?
@@ -559,17 +475,7 @@ export default function App() {
 
             <Player
               playerRef={playerRef}
-              onVideoError={() => {
-                setPlayerState(p => ({
-                  ...p,
-                  // playing: true,
-                  // played: 0,
-                  // playedSeconds: 0,
-                  // loaded: 0,
-                  // loadedSeconds: 0,
-                  error: true
-                }))
-              }}
+            
               onReady={() => {
                 console.log('debug on ready', playerState.played)
                 // // From cache
@@ -658,9 +564,8 @@ export default function App() {
               // Try only one url
               // Fallback to youtube embed
               urls={
-                [
-                  playingVideoData?.adaptiveFormats?.at(0)?.url, `https://www.youtube.com/watch?v=${playingVideoData?.videoId}`
-                ]
+                  [
+                  ]
               }
               volume={playerState.volume}
             />

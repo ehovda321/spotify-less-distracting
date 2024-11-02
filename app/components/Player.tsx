@@ -13,8 +13,7 @@ export default function Player({
         onProgress, 
         onPause, 
         onEnded, 
-        onDuration, 
-        onVideoError,
+        onDuration,
         volume = 1 
     }: any) {
     const [failedUrls, setFailedUrls] = useState<string[]>([])
@@ -22,10 +21,7 @@ export default function Player({
     const url = urls.find((x: string) => !failedUrls.some(y => y == x))
 
     useEffect(() => {
-        const numGoodUrls = urls.filter((x: string) => !failedUrls.some(y => y == x)).length
-        if (numGoodUrls == 0) {
-            onVideoError()
-        }
+
     }, [failedUrls])
 
     if (!url) {
