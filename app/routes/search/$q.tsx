@@ -3,7 +3,6 @@ import { useLoaderData, useOutletContext } from "@remix-run/react";
 import { z } from "zod";
 import { zx } from "zodix";
 import ThumbnailGrid from "~/components/ThumbnailGrid";
-import VideoThumbnail from "~/components/videoThumbnail";
 import { randomFetch } from "~/utils";
 
 export async function loader({ params }: LoaderArgs) {
@@ -36,13 +35,11 @@ export async function loader({ params }: LoaderArgs) {
 export default function SearchPage() {
     const loaderData = useLoaderData();
     const { onThumbnailClick } = useOutletContext<any>()
-    const videos = loaderData?.results?.filter((x: any) => x.type == 'video')
     // const musicVideos = videos.filter()
 
     return <div>
         <p className="text-white font-bold text-2xl tracking-tight py-6">Songs</p>
         <ThumbnailGrid
-            videos={videos}
             onThumbnailClick={onThumbnailClick}
         />
     </div>
