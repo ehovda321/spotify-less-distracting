@@ -101,7 +101,6 @@ export default function App() {
     }))
 
     setFetcherDataShouldUpdateState('skip_update')
-  }, [fetcher.data])
 
   useEffect(() => {
     console.log('debug playlists changed', playlists)
